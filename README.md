@@ -1,4 +1,4 @@
-# PowerNext-AI 2026 — Screening Round (Team 5guys1repo)
+# PowerNext-AI Hackathon 2026 — Screening Round
 
 Black-box test-bench challenge: detect invalid records (Task 1), predict
 `Reference_Parameter` (Task 2), auto-generate the test summary (Task 3).

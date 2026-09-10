@@ -7,7 +7,7 @@
 
 > **PowerNext-AI Hackathon 2026 — Screening Round Submission** 
 
-An end-to-end, production-grade machine learning and data engineering pipeline built for Central Power Research Institute (CPRI) laboratory test-bench data. The system implements a **dual-tier anomaly detection engine** (Task 01), a **physics-guided thermal hotspot regressor** (Task 02), an **automated evaluation report builder** (Task 03), and an architectural blueprint for **Digital Twin edge deployment**.
+An end-to-end, production grade machine learning and data engineering pipeline built for Central Power Research Institute (CPRI) laboratory test-bench data. The system implements a **dual-tier anomaly detection engine**, a **physics-guided thermal hotspot regressor**, an **automated evaluation report builder** and an architectural blueprint for **Digital Twin edge deployment**.
 
 ---
 

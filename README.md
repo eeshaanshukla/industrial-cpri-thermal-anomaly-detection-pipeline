@@ -3,10 +3,9 @@
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg?style=flat&logo=python&logoColor=white)](https://www.python.org/)
 [![Framework](https://img.shields.io/badge/Architecture-Modular_Pipeline-orange.svg?style=flat)](https://github.com/)
 [![Testing](https://img.shields.io/badge/Testing-Pytest-green.svg?style=flat&logo=pytest&logoColor=white)](https://docs.pytest.org/)
-[![License](https://img.shields.io/badge/License-MIT-lightgrey.svg?style=flat)](LICENSE)
 
-> **PowerNext-AI Hackathon 2026 — Screening Round Submission**  
-> **Team Name:** `5guys1repo`
+
+> **PowerNext-AI Hackathon 2026 — Screening Round Submission** 
 
 An end-to-end, production-grade machine learning and data engineering pipeline built for Central Power Research Institute (CPRI) laboratory test-bench data. The system implements a **dual-tier anomaly detection engine** (Task 01), a **physics-guided thermal hotspot regressor** (Task 02), an **automated evaluation report builder** (Task 03), and an architectural blueprint for **Digital Twin edge deployment**.
 

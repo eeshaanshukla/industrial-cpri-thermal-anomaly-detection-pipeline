@@ -1,4 +1,4 @@
-# ⚡ Industrial Thermal Hotspot Prediction & Anomaly Engine
+# Industrial Thermal Hotspot Prediction & Anomaly Engine
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg?style=flat&logo=python&logoColor=white)](https://www.python.org/)
 [![Framework](https://img.shields.io/badge/Architecture-Modular_Pipeline-orange.svg?style=flat)](https://github.com/)

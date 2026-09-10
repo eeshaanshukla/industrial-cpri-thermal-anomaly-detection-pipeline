@@ -1,0 +1,11 @@
+# PowerNext-AI — PINNED via pip freeze (M1+M4, Python 3.11 target; built on 3.13)
+pandas==2.2.3
+numpy==2.3.5
+scikit-learn==1.6.1
+scipy==1.17.1
+matplotlib==3.10.9
+joblib==1.5.3
+openpyxl==3.1.5
+# docs export only (methodology_note.md -> .pdf); not needed by run_pipeline.py
+fpdf2==2.8.8
+pypdf==6.18.0

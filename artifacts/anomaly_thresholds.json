@@ -1,0 +1,15 @@
+{
+  "threshold": 0.15000000000000002,
+  "tuned_for": "Invalid-class F1 on OOF scores (tie-break: precision)",
+  "anomaly_score_definition": "Anomaly_Score = P(Invalid) from hgb classifier (predict_proba positive class); range [0,1]; higher = more suspicious; decision threshold 0.15 tuned for Invalid-F1 on OOF scores (tie-break: precision). NOT blended with unsupervised signals.",
+  "flag_thresholds": {
+    "percentile": 99.0,
+    "fitted_on": "Validity_Label==Valid train rows",
+    "trio_range": 7.968960000000004,
+    "max_abs_dev": 4.491886666666668,
+    "consistency": 0.47005835854749145,
+    "missing_heavy_at": 2
+  },
+  "model": "hgb",
+  "random_state": 42
+}

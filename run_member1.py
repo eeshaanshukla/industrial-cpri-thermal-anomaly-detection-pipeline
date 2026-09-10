@@ -1,0 +1,186 @@
+"""run_member1.py — Member 1 end-to-end build (dev entry point).
+
+Raw xlsx -> train_clean.csv, test_clean.csv, feature_columns.json,
+preprocessing_artifacts.json, mocks/*, artifacts/data_quality_report.md
+
+Usage:
+    python run_member1.py [path/to/participant.xlsx]
+    (default: first .xlsx in data/raw/)
+
+Swap-in rule: when the REAL organizer file lands, drop it in data/raw/ and
+re-run with its path — same code, same schema, no edits.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import sys
+from pathlib import Path
+
+import pandas as pd
+
+ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT / "src"))
+
+from preprocessing import C, load_raw, preprocess_test, preprocess_train  # noqa: E402
+from preprocessing.schema import (  # noqa: E402
+    FORBIDDEN_FEATURES,
+    NUMERIC_INPUT_COLS,
+    SHEET_TEST,
+    SHEET_TRAIN,
+)
+
+
+def find_workbook(explicit: str | None) -> Path:
+    if explicit:
+        return Path(explicit)
+    cands = sorted((ROOT / "data" / "raw").glob("*.xlsx"))
+    # prefer a REAL participant file over the synthetic stand-in if both exist
+    real = [c for c in cands if "synthetic" not in c.name.lower()]
+    pick = (real or cands)[0] if cands else None
+    if pick is None:
+        raise FileNotFoundError("No .xlsx in data/raw/ — add the participant file first.")
+    return pick
+
+
+def build_data_quality_report(raw_train, raw_test, train_clean, test_clean, artifacts) -> str:
+    tr_missing = raw_train.isna().sum()
+    te_missing = raw_test.isna().sum()
+    meas = [c for c in NUMERIC_INPUT_COLS if c in raw_test.columns]
+    dup_test_pairs = int(raw_test.duplicated(subset=meas, keep=False).sum() // 2) if meas else 0
+    corr_s4 = None
+    if C.S4 in raw_train.columns and C.RP in raw_train.columns:
+        corr_s4 = float(raw_train[[C.S4, C.RP]].corr().iloc[0, 1])
+    validity = raw_train[C.VALID].value_counts().to_dict() if C.VALID in raw_train.columns else {}
+    # candidate-abnormal hints for Member 2 (HINTS, not verdicts)
+    trio = test_clean[[c for c in (C.S1, C.S2, C.S3) if c in test_clean.columns]]
+    hints: list[str] = []
+    if len(trio.columns) == 3:
+        gap = (trio.max(axis=1) - trio.min(axis=1))
+        top = gap.nlargest(5)
+        for idx, val in top.items():
+            hints.append(f"- `{test_clean.loc[idx, C.TEST_ID]}`: trio spread {val:.1f} °C (largest sensor disagreement in test)")
+    dupe_ids = []
+    if meas:
+        m = raw_test.duplicated(subset=meas, keep=False)
+        dupe_ids = raw_test.loc[m, C.TEST_ID].astype(str).tolist()[:8]
+
+    lines = [
+        "# Data Quality Report — Member 1 (auto-generated)",
+        "",
+        f"- Raw train rows: {len(raw_train)} | raw test rows: {len(raw_test)}",
+        f"- Train validity balance: {validity} (never hardcoded — read from file)",
+        f"- Clean train rows: {len(train_clean)} (dedup dropped {artifacts.get('dedup_dropped_train', 0)})",
+        f"- Clean test rows: {len(test_clean)} (must equal raw test — no dedup/drops/reorder)",
+        f"- Test order preserved: {list(test_clean[C.TEST_ID].astype(str)) == list(raw_test[C.TEST_ID].astype(str))}",
+        "",
+        "## Missingness (raw, pre-imputation)",
+        "",
+        "| Column | Train NaNs | Test NaNs | Resolution |",
+        "|---|---|---|---|",
+    ]
+    for col in raw_train.columns:
+        tm = int(tr_missing.get(col, 0))
+        te = int(te_missing.get(col, 0)) if col in raw_test.columns else "n/a (target)"
+        res = "median-imputed (train-fitted)" if tm or te else "—"
+        if col in (C.RP, C.VALID):
+            res = "target — never imputed/modeled as feature"
+        lines.append(f"| {col} | {tm} | {te} | {res} |")
+    lines += [
+        "",
+        "## Duplicates",
+        "",
+        f"- Train: dropped {artifacts.get('dedup_dropped_train', 0)} exact-duplicate measurement rows (keep-first). Rule: `{artifacts.get('dedup_rule', '')}`.",
+        f"- Test: {dup_test_pairs} exact-duplicate pair(s) detected — ALL KEPT (test never deduped). IDs: {dupe_ids}",
+        "",
+        "## Noise / spikes / regime notes",
+        "",
+        "- No outlier removal applied by design: unusual ≠ invalid (Member 2's verdict).",
+        f"- Sensor_S4 vs Reference_Parameter correlation (train): {corr_s4:.3f} — relevance unproven, kept as feature + S4-probe feats; Member 3 to ablate." if corr_s4 is not None else "- S4 correlation n/a",
+        "- Missing-indicator flags `feat_missing_*` (0/1, pre-imputation) included in feature list for Members 2/3.",
+        "",
+        "## Candidate-abnormal Test_IDs — HINTS for Member 2 (not verdicts)",
+        "",
+        *(hints or ["- (no strong trio-disagreement candidates)"]),
+        "",
+        "## Imputation values (train-fitted medians)",
+        "",
+        "| Column | Median |",
+        "|---|---|",
+    ]
+    for col, med in artifacts.get("medians", {}).items():
+        lines.append(f"| {col} | {med:.4g} |")
+    lines += ["", "_Generated by run_member1.py — do not hand-edit._", ""]
+    return "\n".join(lines)
+
+
+def main(workbook: str | None = None) -> None:
+    """Build all Member-1 outputs. workbook=None -> CLI arg or auto-find."""
+    cli = sys.argv[1] if len(sys.argv) > 1 else None
+    xlsx = find_workbook(workbook or cli)
+    print(f"Member 1 build from: {xlsx.name}")
+
+    raw_train = load_raw(xlsx, SHEET_TRAIN)
+    raw_test = load_raw(xlsx, SHEET_TEST)
+    print(f"  raw headers train: {list(raw_train.columns)}")
+    print(f"  raw headers test:  {list(raw_test.columns)}")
+
+    train_clean, artifacts = preprocess_train(xlsx, save_dir=ROOT / "data" / "processed")
+    test_clean = preprocess_test(xlsx, artifacts, save_path=ROOT / "data" / "processed" / "test_clean.csv")
+    print(f"  train_clean: {train_clean.shape}  test_clean: {test_clean.shape}")
+
+    # artifacts (canonical home: artifacts/; root copy of feature_columns.json for contract)
+    (ROOT / "artifacts").mkdir(exist_ok=True)
+    arts_to_save = {k: v for k, v in artifacts.items() if k != "feature_columns"}
+    arts_to_save["source_workbook"] = xlsx.name
+    with open(ROOT / "artifacts" / "preprocessing_artifacts.json", "w") as f:
+        json.dump(arts_to_save, f, indent=2)
+    with open(ROOT / "artifacts" / "feature_columns.json", "w") as f:
+        json.dump(artifacts["feature_columns"], f, indent=2)
+    with open(ROOT / "feature_columns.json", "w") as f:  # contract-visible copy, same bytes
+        json.dump(artifacts["feature_columns"], f, indent=2)
+
+    # mocks — IDENTICAL schema to final (spec: schema must not change mock->final)
+    (ROOT / "mocks").mkdir(exist_ok=True)
+    train_clean.to_csv(ROOT / "mocks" / "mock_clean_train.csv", index=False)
+    test_clean.to_csv(ROOT / "mocks" / "mock_clean_test.csv", index=False)
+    with open(ROOT / "mocks" / "mock_feature_columns.json", "w") as f:
+        json.dump(artifacts["feature_columns"], f, indent=2)
+
+    # data quality report
+    report = build_data_quality_report(raw_train, raw_test, train_clean, test_clean, artifacts)
+    with open(ROOT / "artifacts" / "data_quality_report.md", "w", encoding="utf-8") as f:
+        f.write(report)
+
+    # ---- acceptance checklist ----
+    feat_cols = artifacts["feature_columns"]
+    checks = {
+        "test rows preserved (count+order)": (
+            len(test_clean) == len(raw_test)
+            and list(test_clean[C.TEST_ID].astype(str)) == list(raw_test[C.TEST_ID].astype(str))
+        ),
+        "zero NaNs in feature cols": int(test_clean[feat_cols].isna().sum().sum()) == 0
+        and int(train_clean[feat_cols].isna().sum().sum()) == 0,
+        "feature list excludes ID+targets": not (FORBIDDEN_FEATURES & set(feat_cols)),
+        "feat_missing_* included": any(c.startswith("feat_missing_") for c in feat_cols),
+        "train/test schemas match (minus targets)": (
+            set(train_clean.columns) - {C.RP, C.VALID} == set(test_clean.columns)
+        ),
+        "deterministic re-run": test_clean.equals(preprocess_test(xlsx, artifacts)),
+    }
+    print("\nAcceptance checks:")
+    ok = True
+    for name, passed in checks.items():
+        print(f"  [{'PASS' if passed else 'FAIL'}] {name}")
+        ok = ok and passed
+    n_feat = len(feat_cols)
+    print(f"\nFeatures: {n_feat} ({len(NUMERIC_INPUT_COLS)} raw + {n_feat - len(NUMERIC_INPUT_COLS)} feat_*)")
+    print("Wrote: data/processed/train_clean.csv, test_clean.csv, artifacts/*.json|md, mocks/*, feature_columns.json")
+    if not ok:
+        sys.exit(1)
+    print("MEMBER-1 BUILD: ALL CHECKS PASSED")
+
+
+if __name__ == "__main__":
+    main()

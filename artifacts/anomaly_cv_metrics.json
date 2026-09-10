@@ -1,0 +1,91 @@
+{
+  "task": "validity_classification",
+  "cv": "StratifiedKFold(n=5, seed=42)",
+  "model_comparison_oof_invalid_f1": {
+    "rf": 0.9082969432314411,
+    "hgb": 0.9251101321585903
+  },
+  "winner": "hgb",
+  "winner_fold_mean_std_at_05": {
+    "neg_precision": {
+      "mean": 0.9786370655974966,
+      "std": 0.00951382129438913
+    },
+    "neg_recall": {
+      "mean": 1.0,
+      "std": 0.0
+    },
+    "neg_f1": {
+      "mean": 0.9891798857729912,
+      "std": 0.004850322344044068
+    },
+    "pos_precision": {
+      "mean": 1.0,
+      "std": 0.0
+    },
+    "pos_recall": {
+      "mean": 0.843,
+      "std": 0.07271252375699189
+    },
+    "pos_f1": {
+      "mean": 0.9131433491933951,
+      "std": 0.042340982654419254
+    },
+    "roc_auc": {
+      "mean": 0.9320012623745931,
+      "std": 0.03749553656795544
+    }
+  },
+  "winner_oof_at_tuned_threshold": {
+    "neg_label": "Valid",
+    "pos_label": "Invalid",
+    "neg_precision": 0.9807474518686297,
+    "neg_recall": 1.0,
+    "neg_f1": 0.9902801600914809,
+    "neg_support": 866,
+    "pos_precision": 1.0,
+    "pos_recall": 0.860655737704918,
+    "pos_f1": 0.9251101321585903,
+    "pos_support": 122,
+    "roc_auc": 0.9322019460114338
+  },
+  "winner_oof_confusion_matrix": {
+    "labels_order": [
+      "Valid",
+      "Invalid"
+    ],
+    "matrix": [
+      [
+        866,
+        0
+      ],
+      [
+        17,
+        105
+      ]
+    ],
+    "layout": "rows=true [neg,pos], cols=pred [neg,pos] (TN,FP / FN,TP)"
+  },
+  "tuned_threshold": 0.15000000000000002,
+  "regime_check": {
+    "edge_definition": "train rows with Load_Current_A >= p95 AND Validity_Label==Valid",
+    "current_p95": 106.14522499999998,
+    "n_edge_valid_rows": 40,
+    "oof_fpr_on_edge_valid": 0.0,
+    "oof_invalid_recall": 0.860655737704918
+  },
+  "worked_example_valid_but_unusual": {
+    "test_id": "TRN-0762",
+    "why_unusual": "Load_Current_A=110.0 (>= p99=109.5); Applied_Voltage_kV=26.0; S1/S2/S3=19.1/20.1/23.5",
+    "true_label": "Valid",
+    "oof_anomaly_score": 0.0006238018148678748,
+    "threshold": 0.15000000000000002,
+    "oof_verdict": "Valid"
+  },
+  "class_balance_train": {
+    "Valid": 866,
+    "Invalid": 122
+  },
+  "n_train_rows": 988,
+  "n_features": 45
+}

@@ -1,0 +1,178 @@
+{
+  "task": "reference_parameter_regression",
+  "cv": "KFold(n=5, seed=42)",
+  "model_comparison_oof": {
+    "linear": {
+      "mae": 3.374240986689748,
+      "rmse": 3.9754370374192356,
+      "r2": 0.8629065745900489,
+      "n": 866
+    },
+    "rf": {
+      "mae": 0.6959484545966209,
+      "rmse": 1.2017385079321357,
+      "r2": 0.9874724304016173,
+      "n": 866
+    },
+    "hgb": {
+      "mae": 0.6681719147904693,
+      "rmse": 1.0839852105988765,
+      "r2": 0.9898071981245972,
+      "n": 866
+    }
+  },
+  "model_comparison_winner": "hgb",
+  "population_experiment": {
+    "rule": "B wins iff RMSE_B < 0.98*RMSE_A AND MAE_B <= MAE_A; else default A (Valid-only)",
+    "A_valid_only": {
+      "mae": 0.6583635623784636,
+      "rmse": 1.0452514064734806,
+      "r2": 0.9905226179105742,
+      "n": 866
+    },
+    "B_all_rows": {
+      "mae": 0.6988306656332808,
+      "rmse": 1.1124960905756276,
+      "r2": 0.9892639665546961,
+      "n": 866
+    },
+    "chosen_population": "A_valid_only"
+  },
+  "s4_ablation": {
+    "rule": "drop S4 family unless it strictly improves OOF RMSE (simpler wins ties)",
+    "s4_family": [
+      "Sensor_S4",
+      "feat_s4_abs_dev",
+      "feat_s4_minus_smean",
+      "feat_s4_ratio"
+    ],
+    "with_s4": {
+      "mae": 0.6681719147904693,
+      "rmse": 1.0839852105988765,
+      "r2": 0.9898071981245972,
+      "n": 866
+    },
+    "without_s4": {
+      "mae": 0.6687465736122961,
+      "rmse": 1.07479264220369,
+      "r2": 0.9899793420462483,
+      "n": 866
+    },
+    "decision": "drop_s4"
+  },
+  "final_oof": {
+    "mae": 0.6687465736122961,
+    "rmse": 1.07479264220369,
+    "r2": 0.9899793420462483,
+    "n": 866
+  },
+  "final_fold_mean_std": {
+    "mae": {
+      "mean": 0.6687093128607519,
+      "std": 0.03663995791858377
+    },
+    "rmse": {
+      "mean": 1.0662567345987897,
+      "std": 0.1341676530679135
+    },
+    "r2": {
+      "mean": 0.9899232163511769,
+      "std": 0.002572304906953231
+    }
+  },
+  "final_features_n": 41,
+  "top_features": [
+    {
+      "feature": "Load_Current_A",
+      "importance": 0.9223400629735021
+    },
+    {
+      "feature": "feat_s1_dev",
+      "importance": 0.02614081980481587
+    },
+    {
+      "feature": "Sensor_S2",
+      "importance": 0.02448702919001759
+    },
+    {
+      "feature": "feat_smax_abs",
+      "importance": 0.011779179115218702
+    },
+    {
+      "feature": "feat_smean_abs",
+      "importance": 0.005246677835583004
+    },
+    {
+      "feature": "Ambient_Temperature_C",
+      "importance": 0.004475198568996053
+    },
+    {
+      "feature": "feat_temp_per_power",
+      "importance": 0.0025851514587477372
+    },
+    {
+      "feature": "feat_energy_input",
+      "importance": 0.0006378621433194436
+    },
+    {
+      "feature": "feat_s_min",
+      "importance": 0.00042089569417210404
+    },
+    {
+      "feature": "feat_i2t",
+      "importance": 0.00022555667647008277
+    },
+    {
+      "feature": "feat_s_consistency",
+      "importance": 0.0002095066592997618
+    },
+    {
+      "feature": "feat_s_median",
+      "importance": 0.00020672595663997733
+    },
+    {
+      "feature": "feat_power_input",
+      "importance": 0.00020428941652047574
+    },
+    {
+      "feature": "feat_volt_x_dur",
+      "importance": 0.0001699557997650207
+    },
+    {
+      "feature": "feat_abs_s1_s2_gap",
+      "importance": 0.00015163294467007162
+    }
+  ],
+  "edge_robustness": {
+    "overall_oof": {
+      "mae": 0.6687465736122961,
+      "rmse": 1.07479264220369,
+      "r2": 0.9899793420462483,
+      "n": 866
+    },
+    "edge_high_current": {
+      "n": 44,
+      "mae": 1.0496337694133724,
+      "rmse": 1.2110619598319112,
+      "r2": 0.9225421745494441
+    },
+    "edge_high_voltage": {
+      "n": 44,
+      "mae": 0.5335093294809922,
+      "rmse": 0.713597209063333,
+      "r2": 0.993950249681484
+    },
+    "edge_long_duration": {
+      "n": 0,
+      "note": "too few rows \u2014 skipped"
+    }
+  },
+  "train_target_stats": {
+    "min": 11.9183,
+    "max": 61.5848,
+    "mean": 26.747993187066974,
+    "std": 10.736842084216244
+  },
+  "n_fit_rows": 866,
+  "clip_rule": "predictions clipped at 0 (temperature rise above ambient)"
+}

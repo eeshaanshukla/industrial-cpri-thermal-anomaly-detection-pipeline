@@ -1,0 +1,15 @@
+{
+  "team": "5guys1repo",
+  "records_analysed": 350,
+  "abnormal_invalid_count": 38,
+  "min_predicted_reference_parameter": 13.131142022608463,
+  "max_predicted_reference_parameter": 59.44433986507592,
+  "avg_predicted_reference_parameter": 26.438813295688274,
+  "top_3_attention_test_ids": [
+    "TST-0172",
+    "TST-0275",
+    "TST-0037"
+  ],
+  "approach_explanation": "We cleaned 350 test records with train-fitted medians and kept every row in input order, adding 45 thermal-consistency features. A gradient-boosting validity classifier (Invalid F1 0.925) flagged 38 records as Invalid, separating sensor faults from genuine regime shifts. A second gradient-boosting model (RMSE 1.07) predicted Reference_Parameter for all rows from 13.1 to 59.4 (avg 26.4). Attention blends anomaly score with decision-borderline closeness; highest attention: TST-0172, TST-0275, TST-0037.",
+  "approach_explanation_word_count": 67
+}
